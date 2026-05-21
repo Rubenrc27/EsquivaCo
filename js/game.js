@@ -197,10 +197,6 @@ function triggerGameOver() {
     createExplosion(player.x, player.y, '#00ff66', 30);
     screenShake = 25;
 }
-    
-    createExplosion(player.x, player.y, '#00ff66', 30);
-    screenShake = 25;
-}
 
 function createExplosion(x, y, color, count) {
     for (let i = 0; i < count; i++) {
