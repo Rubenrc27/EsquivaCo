@@ -23,7 +23,7 @@ export const Leaderboard = {
 
         return data.map(entry => ({
             score: entry.score,
-            username: entry.profiles.username,
+            username: (entry.profiles && entry.profiles.username) || entry.username_fallback || "ANÓNIMO",
             date: new Date(entry.created_at).toLocaleDateString()
         }));
     },
@@ -55,6 +55,29 @@ export const Leaderboard = {
 
         if (error) {
             console.error('Error saving entry:', error);
+        }
+    },
+
+    async saveEntryByName(username, score) {
+        console.log("Guardando récord para:", username, "Puntos:", score);
+        
+        // Buscamos si el perfil existe por nombre, o simplemente insertamos con una lógica simplificada
+        // Para que esto funcione sin Auth, la tabla 'leaderboard' debe permitir inserts o usar una RPC
+        const { error } = await supabase
+            .from('leaderboard_anonymous') // Usaremos una tabla alternativa o adaptada si existe
+            .insert([
+                { username: username, score: score }
+            ]);
+
+        if (error) {
+            console.warn('Error al guardar récord (modo anónimo):', error.message);
+            // Intentamos en la tabla original si la estructura lo permite
+            const { error: errorOriginal } = await supabase
+                .from('leaderboard')
+                .insert([
+                    { username_fallback: username, score: score }
+                ]);
+            if (errorOriginal) console.error('Error final al guardar:', errorOriginal.message);
         }
     },
 
