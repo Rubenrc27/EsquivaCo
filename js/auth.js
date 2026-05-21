@@ -1,45 +1,42 @@
 import { supabase } from './supabase-client.js';
 
 export const Auth = {
-    async loginOrSignup(username, password) {
-        console.log("Intentando login para:", username);
+    // Autenticación silenciosa: usa un password interno para que el usuario no tenga que ponerlo
+    async silentAuth(username) {
+        console.log("SilentAuth para:", username);
         const virtualEmail = `${username.toLowerCase()}@esquivaco.local`;
-        
+        const internalPass = "EsquivaCo_Internal_2026!"; // Password fijo para todos los nicks
+
         // 1. Intentar Login
         const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
             email: virtualEmail,
-            password: password,
+            password: internalPass,
         });
 
         if (!signInError) {
-            console.log("Login exitoso");
+            console.log("Login silencioso exitoso");
             return { user: signInData.user, error: null };
         }
 
-        console.log("Error en login, intentando registro:", signInError.message);
-
-        // 2. Si falla por credenciales inválidas, podría ser que el usuario no existe
-        if (signInError.message.includes("Invalid login credentials") || signInError.status === 400) {
-            const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-                email: virtualEmail,
-                password: password,
-                options: {
-                    data: {
-                        username: username
-                    }
+        // 2. Si el login falla, intentamos registrar
+        console.log("Usuario no existe, registrando...");
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+            email: virtualEmail,
+            password: internalPass,
+            options: {
+                data: {
+                    username: username
                 }
-            });
-
-            if (signUpError) {
-                console.error("Error en registro:", signUpError.message);
-                return { user: null, error: signUpError.message };
             }
-            
-            console.log("Registro exitoso");
-            return { user: signUpData.user, error: null };
+        });
+
+        if (signUpError) {
+            console.error("Error en SilentAuth:", signUpError.message);
+            return { user: null, error: signUpError.message };
         }
 
-        return { user: null, error: signInError.message };
+        console.log("Registro silencioso exitoso");
+        return { user: signUpData.user, error: null };
     },
 
     async getCurrentUser() {
@@ -49,6 +46,7 @@ export const Auth = {
 
     async logout() {
         await supabase.auth.signOut();
+        localStorage.removeItem('esquivaco_user');
         window.location.reload();
     }
 };

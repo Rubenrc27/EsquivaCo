@@ -4,19 +4,8 @@ const MAX_ENTRIES = 10;
 
 export const Leaderboard = {
     async getEntries() {
-        console.log("Cargando récords...");
+        console.log("Cargando récords desde la tabla real...");
         
-        // Diagnóstico: Ver qué columnas existen realmente
-        const { data: diagData, error: diagError } = await supabase
-            .from('leaderboard')
-            .select('*')
-            .limit(1);
-        
-        if (diagData && diagData[0]) {
-            console.log("Columnas detectadas en leaderboard:", Object.keys(diagData[0]));
-        }
-
-        // Consulta original (que sabemos que funcionaba a nivel de columnas)
         const { data, error } = await supabase
             .from('leaderboard')
             .select(`
@@ -30,55 +19,20 @@ export const Leaderboard = {
             .limit(MAX_ENTRIES);
 
         if (error) {
-            console.warn('Error en consulta principal de récords:', error.message);
-            
-            // Reintento simplificado si falla la relación con profiles
-            const { data: simpleData, error: simpleError } = await supabase
-                .from('leaderboard')
-                .select('score, created_at, username_fallback')
-                .order('score', { ascending: false })
-                .limit(MAX_ENTRIES);
-
-            if (simpleError) {
-                console.error('Error total al cargar récords:', simpleError.message);
-                return [];
-            }
-            
-            return simpleData.map(entry => ({
-                score: entry.score,
-                username: entry.username_fallback || "ANÓNIMO",
-                date: new Date(entry.created_at).toLocaleDateString()
-            }));
+            console.error('Error al obtener récords:', error.message);
+            return [];
         }
-
-        console.log("Récords obtenidos:", data.length);
 
         return data.map(entry => ({
             score: entry.score,
-            username: (entry.profiles && entry.profiles.username) || entry.username_fallback || "ANÓNIMO",
+            username: (entry.profiles && entry.profiles.username) || "DESCONOCIDO",
             date: new Date(entry.created_at).toLocaleDateString()
         }));
     },
 
-    async getUserBest(userId) {
-        const { data, error } = await supabase
-            .from('leaderboard')
-            .select('score')
-            .eq('user_id', userId)
-            .order('score', { ascending: false })
-            .limit(1)
-            .single();
-
-        if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned"
-            console.error('Error fetching user best:', error);
-        }
-
-        return data ? data.score : 0;
-    },
-
     async saveEntry(userId, score) {
-        // Only save if it's a new record or if you want to keep all attempts.
-        // For a simple leaderboard, we can just insert all and the query takes the max.
+        console.log("Guardando récord oficial para ID:", userId, "Puntos:", score);
+        
         const { error } = await supabase
             .from('leaderboard')
             .insert([
@@ -86,30 +40,9 @@ export const Leaderboard = {
             ]);
 
         if (error) {
-            console.error('Error saving entry:', error);
-        }
-    },
-
-    async saveEntryByName(username, score) {
-        console.log("Guardando récord para:", username, "Puntos:", score);
-        
-        // Buscamos si el perfil existe por nombre, o simplemente insertamos con una lógica simplificada
-        // Para que esto funcione sin Auth, la tabla 'leaderboard' debe permitir inserts o usar una RPC
-        const { error } = await supabase
-            .from('leaderboard_anonymous') // Usaremos una tabla alternativa o adaptada si existe
-            .insert([
-                { username: username, score: score }
-            ]);
-
-        if (error) {
-            console.warn('Error al guardar récord (modo anónimo):', error.message);
-            // Intentamos en la tabla original si la estructura lo permite
-            const { error: errorOriginal } = await supabase
-                .from('leaderboard')
-                .insert([
-                    { username_fallback: username, score: score }
-                ]);
-            if (errorOriginal) console.error('Error final al guardar:', errorOriginal.message);
+            console.error('Error al guardar récord oficial:', error.message);
+        } else {
+            console.log("Récord guardado con éxito.");
         }
     },
 

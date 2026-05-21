@@ -1,4 +1,5 @@
 import { Leaderboard } from './leaderboard.js';
+import { Auth } from './auth.js';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -30,7 +31,7 @@ let screenShake = 0;
 let isMuted = false;
 let currentLevel = 1;
 let hasShield = false;
-let currentUsername = localStorage.getItem('esquivaco_user') || null;
+let currentUser = null;
 
 // Entities
 let player = {
@@ -67,17 +68,24 @@ function setupAudio() {
 }
 
 // Session handling
-function initSession() {
-    console.log("Iniciando sesión local...");
-    if (currentUsername) {
-        showStartScreen(currentUsername);
+async function initSession() {
+    console.log("Iniciando sesión...");
+    const savedName = localStorage.getItem('esquivaco_user');
+    if (savedName) {
+        console.log("Restaurando sesión para:", savedName);
+        const { user } = await Auth.silentAuth(savedName);
+        if (user) {
+            currentUser = user;
+            showStartScreen(savedName);
+        } else {
+            showLoginScreen();
+        }
     } else {
         showLoginScreen();
     }
 }
 
 function showStartScreen(username) {
-    console.log("Mostrando pantalla de inicio para:", username);
     loginScreen.classList.add('hidden');
     startScreen.classList.remove('hidden');
     const displayUser = document.getElementById('display-username');
@@ -87,13 +95,11 @@ function showStartScreen(username) {
 }
 
 function showLoginScreen() {
-    console.log("Mostrando pantalla de login");
     loginScreen.classList.remove('hidden');
     startScreen.classList.add('hidden');
 }
 
-window.handleAuth = () => {
-    console.log("Entrando al juego...");
+window.handleAuth = async () => {
     const usernameInput = document.getElementById('auth-username');
     const errorMsg = document.getElementById('auth-error');
 
@@ -107,21 +113,23 @@ window.handleAuth = () => {
         return;
     }
 
-    if (username.length < 3) {
-        errorMsg.innerText = "Mínimo 3 caracteres";
-        errorMsg.classList.remove('hidden');
-        return;
-    }
+    errorMsg.innerText = "Entrando...";
+    errorMsg.classList.remove('hidden');
 
-    errorMsg.classList.add('hidden');
-    currentUsername = username;
-    localStorage.setItem('esquivaco_user', username);
-    showStartScreen(username);
+    const { user, error } = await Auth.silentAuth(username);
+    
+    if (error) {
+        errorMsg.innerText = "Error: " + error;
+    } else {
+        errorMsg.classList.add('hidden');
+        currentUser = user;
+        localStorage.setItem('esquivaco_user', username);
+        showStartScreen(username);
+    }
 };
 
-window.logout = () => {
-    localStorage.removeItem('esquivaco_user');
-    location.reload();
+window.logout = async () => {
+    await Auth.logout();
 };
 
 // Game Functions
@@ -182,10 +190,13 @@ function triggerGameOver() {
     }
     highScoreTxt.innerText = highScore;
     
-    // Save record to database if we have a username
-    if (currentUsername) {
-        Leaderboard.saveEntryByName(currentUsername, score);
+    if (currentUser) {
+        Leaderboard.saveEntry(currentUser.id, score);
     }
+    
+    createExplosion(player.x, player.y, '#00ff66', 30);
+    screenShake = 25;
+}
     
     createExplosion(player.x, player.y, '#00ff66', 30);
     screenShake = 25;
