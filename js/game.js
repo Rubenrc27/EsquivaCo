@@ -33,10 +33,14 @@ let currentLevel = 1;
 let hasShield = false;
 let currentUser = null;
 
+// Time management (Delta Time)
+let lastTime = 0;
+const TARGET_FPS = 60;
+
 // Entities
 let player = {
     angle: 0,
-    speed: 0.045,
+    speed: 0.045, // Base angular speed
     baseSpeed: 0.045,
     direction: 1,
     radius: 8,
@@ -148,6 +152,7 @@ window.startGame = () => {
     player.direction = 1;
     player.trail = [];
     hud.innerText = score;
+    lastTime = performance.now(); // Reset time on start
     
     if (!isMuted) {
         bgMusic.play().catch(() => {
@@ -247,14 +252,15 @@ function spawnObstacle() {
     });
 }
 
-function update() {
+function update(dt) {
     if (screenShake > 0) screenShake--;
 
+    // Particles use dt for fade
     for (let i = particles.length - 1; i >= 0; i--) {
         let p = particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
-        p.alpha -= 0.02;
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.alpha -= 0.02 * dt;
         if (p.alpha <= 0) particles.splice(i, 1);
     }
 
@@ -273,14 +279,15 @@ function update() {
         screenShake = 20;
     }
 
-    player.angle += player.speed * player.direction;
+    // Movement synchronized with dt
+    player.angle += player.speed * player.direction * dt;
     player.x = CX + Math.cos(player.angle) * ORBIT_RADIUS;
     player.y = CY + Math.sin(player.angle) * ORBIT_RADIUS;
 
     player.trail.push({ x: player.x, y: player.y });
     if (player.trail.length > 12) player.trail.shift();
 
-    spawnTimer++;
+    spawnTimer += dt;
     if (spawnTimer >= spawnRate) {
         spawnTimer = 0;
         
@@ -291,14 +298,14 @@ function update() {
         }
 
         if (spawnRate > 28 && score > 0 && score % 3 === 0) {
-            spawnRate -= 1;
+            spawnRate -= 0.5; // Adjusted decrement for dt
         }
     }
 
     for (let i = obstacles.length - 1; i >= 0; i--) {
         let obs = obstacles[i];
-        obs.x += obs.vx;
-        obs.y += obs.vy;
+        obs.x += obs.vx * dt;
+        obs.y += obs.vy * dt;
 
         let distToPlayer = Math.hypot(player.x - obs.x, player.y - obs.y);
         if (distToPlayer < player.radius + obs.radius) {
@@ -323,7 +330,6 @@ function update() {
         let distToCenter = Math.hypot(CX - obs.x, CY - obs.y);
         
         if (obs.type === 'ghost') {
-            // Ghost obstacles pass through but get removed when too far
             if (distToCenter > 500) {
                 obstacles.splice(i, 1);
             }
@@ -388,7 +394,6 @@ function draw() {
         ctx.fillStyle = obs.color;
         ctx.beginPath();
         if (obs.type === 'shield') {
-            // Draw a diamond shape for the shield item
             ctx.moveTo(obs.x, obs.y - obs.radius);
             ctx.lineTo(obs.x + obs.radius, obs.y);
             ctx.lineTo(obs.x, obs.y + obs.radius);
@@ -420,7 +425,6 @@ function draw() {
         ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
         ctx.fill();
         
-        // Extra glow if shield active
         if (hasShield) {
             ctx.beginPath();
             ctx.arc(player.x, player.y, player.radius + 4, 0, Math.PI * 2);
@@ -445,12 +449,20 @@ function draw() {
     ctx.restore();
 }
 
-function gameLoop() {
-    update();
+function gameLoop(now) {
+    // Delta time calculation
+    if (!lastTime) lastTime = now;
+    const deltaTime = (now - lastTime) / (1000 / TARGET_FPS);
+    lastTime = now;
+
+    // Use dt only if it's reasonable (ignore spikes or first frame)
+    const dt = isNaN(deltaTime) ? 1 : Math.min(deltaTime, 2);
+
+    update(dt);
     draw();
     requestAnimationFrame(gameLoop);
 }
 
 setupAudio();
 initSession();
-gameLoop();
+requestAnimationFrame(gameLoop);
