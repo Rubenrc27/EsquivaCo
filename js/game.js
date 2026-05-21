@@ -1,10 +1,12 @@
 import { Leaderboard } from './leaderboard.js';
+import { Auth } from './auth.js';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 // UI Elements
 const hud = document.getElementById('hud');
+const loginScreen = document.getElementById('login-screen');
 const startScreen = document.getElementById('start-screen');
 const gameoverScreen = document.getElementById('gameover-screen');
 const leaderboardScreen = document.getElementById('leaderboard-screen');
@@ -29,6 +31,7 @@ let screenShake = 0;
 let isMuted = false;
 let currentLevel = 1;
 let hasShield = false;
+let currentUser = null;
 
 // Entities
 let player = {
@@ -63,6 +66,54 @@ function setupAudio() {
         audioBtn.innerHTML = isMuted ? '🔇' : '🔊';
     });
 }
+
+// Session handling
+async function initSession() {
+    currentUser = await Auth.getCurrentUser();
+    if (currentUser) {
+        showStartScreen(currentUser);
+    } else {
+        showLoginScreen();
+    }
+}
+
+function showStartScreen(user) {
+    loginScreen.classList.add('hidden');
+    startScreen.classList.remove('hidden');
+    document.getElementById('display-username').innerText = user.user_metadata.username || user.email.split('@')[0];
+}
+
+function showLoginScreen() {
+    loginScreen.classList.remove('hidden');
+    startScreen.classList.add('hidden');
+}
+
+window.handleAuth = async () => {
+    const username = document.getElementById('auth-username').value;
+    const password = document.getElementById('auth-password').value;
+    const errorMsg = document.getElementById('auth-error');
+    
+    if (!username || !password) {
+        errorMsg.innerText = "Completa todos los campos";
+        errorMsg.classList.remove('hidden');
+        return;
+    }
+
+    errorMsg.classList.add('hidden');
+    const { user, error } = await Auth.loginOrSignup(username, password);
+    
+    if (error) {
+        errorMsg.innerText = error;
+        errorMsg.classList.remove('hidden');
+    } else {
+        currentUser = user;
+        showStartScreen(user);
+    }
+};
+
+window.logout = async () => {
+    await Auth.logout();
+};
 
 // Game Functions
 window.startGame = () => {
@@ -122,7 +173,9 @@ function triggerGameOver() {
     }
     highScoreTxt.innerText = highScore;
     
-    Leaderboard.saveEntry(score);
+    if (currentUser) {
+        Leaderboard.saveEntry(currentUser.id, score);
+    }
     
     createExplosion(player.x, player.y, '#00ff66', 30);
     screenShake = 25;
@@ -383,66 +436,4 @@ function gameLoop() {
 
 setupAudio();
 initSession();
-gameLoop();
-obs.x, obs.y + obs.radius);
-            ctx.lineTo(obs.x - obs.radius, obs.y);
-            ctx.closePath();
-        } else {
-            ctx.arc(obs.x, obs.y, obs.radius, 0, Math.PI * 2);
-        }
-        ctx.fill();
-    });
-
-    // Trail
-    ctx.shadowBlur = 0;
-    player.trail.forEach((pos, idx) => {
-        let alpha = (idx / player.trail.length) * 0.4;
-        let rad = player.radius * (idx / player.trail.length);
-        ctx.beginPath();
-        ctx.arc(pos.x, pos.y, rad, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(0, 255, 102, ${alpha})`;
-        ctx.fill();
-    });
-
-    // Player
-    if (gameState === 'PLAYING') {
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = hasShield ? '#ffff00' : '#00ff66';
-        ctx.fillStyle = hasShield ? '#ffff00' : '#00ff66';
-        ctx.beginPath();
-        ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Extra glow if shield active
-        if (hasShield) {
-            ctx.beginPath();
-            ctx.arc(player.x, player.y, player.radius + 4, 0, Math.PI * 2);
-            ctx.strokeStyle = 'rgba(255, 255, 0, 0.5)';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-        }
-    }
-
-    // Particles
-    ctx.shadowBlur = 5;
-    particles.forEach(p => {
-        ctx.shadowColor = p.color;
-        ctx.fillStyle = p.color;
-        ctx.globalAlpha = p.alpha;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalAlpha = 1.0;
-    });
-
-    ctx.restore();
-}
-
-function gameLoop() {
-    update();
-    draw();
-    requestAnimationFrame(gameLoop);
-}
-
-setupAudio();
 gameLoop();
