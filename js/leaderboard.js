@@ -6,13 +6,22 @@ export const Leaderboard = {
     async getEntries() {
         console.log("Cargando récords...");
         
-        // Intentamos la consulta con perfiles (modo original)
+        // Diagnóstico: Ver qué columnas existen realmente
+        const { data: diagData, error: diagError } = await supabase
+            .from('leaderboard')
+            .select('*')
+            .limit(1);
+        
+        if (diagData && diagData[0]) {
+            console.log("Columnas detectadas en leaderboard:", Object.keys(diagData[0]));
+        }
+
+        // Consulta original (que sabemos que funcionaba a nivel de columnas)
         const { data, error } = await supabase
             .from('leaderboard')
             .select(`
                 score,
                 created_at,
-                username_fallback,
                 profiles (
                     username
                 )
