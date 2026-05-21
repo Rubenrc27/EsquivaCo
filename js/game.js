@@ -69,29 +69,49 @@ function setupAudio() {
 
 // Session handling
 async function initSession() {
-    currentUser = await Auth.getCurrentUser();
-    if (currentUser) {
-        showStartScreen(currentUser);
-    } else {
-        showLoginScreen();
+    console.log("Iniciando sesión...");
+    try {
+        currentUser = await Auth.getCurrentUser();
+        console.log("Usuario actual:", currentUser);
+        if (currentUser) {
+            showStartScreen(currentUser);
+        } else {
+            showLoginScreen();
+        }
+    } catch (e) {
+        console.error("Error en initSession:", e);
     }
 }
 
 function showStartScreen(user) {
+    console.log("Mostrando pantalla de inicio");
     loginScreen.classList.add('hidden');
     startScreen.classList.remove('hidden');
-    document.getElementById('display-username').innerText = user.user_metadata.username || user.email.split('@')[0];
+    const displayUser = document.getElementById('display-username');
+    if (displayUser) {
+        displayUser.innerText = user.user_metadata.username || user.email.split('@')[0];
+    }
 }
 
 function showLoginScreen() {
+    console.log("Mostrando pantalla de login");
     loginScreen.classList.remove('hidden');
     startScreen.classList.add('hidden');
 }
 
 window.handleAuth = async () => {
-    const username = document.getElementById('auth-username').value;
-    const password = document.getElementById('auth-password').value;
+    console.log("handleAuth ejecutado");
+    const usernameInput = document.getElementById('auth-username');
+    const passwordInput = document.getElementById('auth-password');
     const errorMsg = document.getElementById('auth-error');
+
+    if (!usernameInput || !passwordInput) {
+        console.error("No se encontraron los inputs de auth");
+        return;
+    }
+
+    const username = usernameInput.value;
+    const password = passwordInput.value;
     
     if (!username || !password) {
         errorMsg.innerText = "Completa todos los campos";
@@ -103,9 +123,11 @@ window.handleAuth = async () => {
     const { user, error } = await Auth.loginOrSignup(username, password);
     
     if (error) {
+        console.error("Error de autenticación:", error);
         errorMsg.innerText = error;
         errorMsg.classList.remove('hidden');
     } else {
+        console.log("Autenticación exitosa, cambiando pantalla...");
         currentUser = user;
         showStartScreen(user);
     }

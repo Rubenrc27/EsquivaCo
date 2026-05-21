@@ -2,6 +2,7 @@ import { supabase } from './supabase-client.js';
 
 export const Auth = {
     async loginOrSignup(username, password) {
+        console.log("Intentando login para:", username);
         const virtualEmail = `${username.toLowerCase()}@esquivaco.local`;
         
         // 1. Intentar Login
@@ -11,12 +12,13 @@ export const Auth = {
         });
 
         if (!signInError) {
+            console.log("Login exitoso");
             return { user: signInData.user, error: null };
         }
 
+        console.log("Error en login, intentando registro:", signInError.message);
+
         // 2. Si falla por credenciales inválidas, podría ser que el usuario no existe
-        // Supabase por seguridad a veces devuelve el mismo error si el usuario no existe.
-        // Vamos a intentar registrarlo.
         if (signInError.message.includes("Invalid login credentials") || signInError.status === 400) {
             const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
                 email: virtualEmail,
@@ -29,9 +31,11 @@ export const Auth = {
             });
 
             if (signUpError) {
+                console.error("Error en registro:", signUpError.message);
                 return { user: null, error: signUpError.message };
             }
             
+            console.log("Registro exitoso");
             return { user: signUpData.user, error: null };
         }
 
