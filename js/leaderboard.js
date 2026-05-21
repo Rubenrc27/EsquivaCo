@@ -4,11 +4,15 @@ const MAX_ENTRIES = 10;
 
 export const Leaderboard = {
     async getEntries() {
+        console.log("Cargando récords...");
+        
+        // Intentamos la consulta con perfiles (modo original)
         const { data, error } = await supabase
             .from('leaderboard')
             .select(`
                 score,
                 created_at,
+                username_fallback,
                 profiles (
                     username
                 )
@@ -17,9 +21,28 @@ export const Leaderboard = {
             .limit(MAX_ENTRIES);
 
         if (error) {
-            console.error('Error fetching leaderboard:', error);
-            return [];
+            console.warn('Error en consulta principal de récords:', error.message);
+            
+            // Reintento simplificado si falla la relación con profiles
+            const { data: simpleData, error: simpleError } = await supabase
+                .from('leaderboard')
+                .select('score, created_at, username_fallback')
+                .order('score', { ascending: false })
+                .limit(MAX_ENTRIES);
+
+            if (simpleError) {
+                console.error('Error total al cargar récords:', simpleError.message);
+                return [];
+            }
+            
+            return simpleData.map(entry => ({
+                score: entry.score,
+                username: entry.username_fallback || "ANÓNIMO",
+                date: new Date(entry.created_at).toLocaleDateString()
+            }));
         }
+
+        console.log("Récords obtenidos:", data.length);
 
         return data.map(entry => ({
             score: entry.score,
