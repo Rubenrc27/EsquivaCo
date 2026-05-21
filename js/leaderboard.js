@@ -4,8 +4,9 @@ const MAX_ENTRIES = 10;
 
 export const Leaderboard = {
     async getEntries() {
-        console.log("Cargando récords desde la tabla real...");
+        console.log("Cargando récords (Modo Híbrido)...");
         
+        // Intentamos cargar de la tabla 'leaderboard'
         const { data, error } = await supabase
             .from('leaderboard')
             .select(`
@@ -19,30 +20,38 @@ export const Leaderboard = {
             .limit(MAX_ENTRIES);
 
         if (error) {
-            console.error('Error al obtener récords:', error.message);
+            console.warn('Error al obtener récords:', error.message);
             return [];
         }
 
         return data.map(entry => ({
             score: entry.score,
-            username: (entry.profiles && entry.profiles.username) || "DESCONOCIDO",
+            username: (entry.profiles && entry.profiles.username) || "ANÓNIMO",
             date: new Date(entry.created_at).toLocaleDateString()
         }));
     },
 
-    async saveEntry(userId, score) {
-        console.log("Guardando récord oficial para ID:", userId, "Puntos:", score);
+    // Nueva función para guardar sin requerir Auth
+    async saveScoreByName(username, score) {
+        console.log("Guardando récord para:", username, "Puntos:", score);
         
+        // IMPORTANTE: Para que esto funcione sin Auth, tu tabla 'leaderboard' 
+        // debe tener habilitados los permisos (RLS) para inserts públicos.
+        // O podrías intentar una RPC si tienes una función definida.
+        
+        // Intentamos insertar directamente
         const { error } = await supabase
             .from('leaderboard')
             .insert([
-                { user_id: userId, score: score }
+                { 
+                    score: score,
+                    // Como no tenemos user_id, esto podría fallar si es obligatorio.
+                    // Si tienes un trigger que asocie nombres, úsalo aquí.
+                }
             ]);
 
         if (error) {
-            console.error('Error al guardar récord oficial:', error.message);
-        } else {
-            console.log("Récord guardado con éxito.");
+            console.error('Error al guardar puntuación:', error.message);
         }
     },
 

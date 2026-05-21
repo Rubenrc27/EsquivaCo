@@ -40,7 +40,7 @@ const TARGET_FPS = 60;
 // Entities
 let player = {
     angle: 0,
-    speed: 0.045, // Base angular speed
+    speed: 0.045,
     baseSpeed: 0.045,
     direction: 1,
     radius: 8,
@@ -76,7 +76,6 @@ async function initSession() {
     console.log("Iniciando sesión...");
     const savedName = localStorage.getItem('esquivaco_user');
     if (savedName) {
-        console.log("Restaurando sesión para:", savedName);
         const { user } = await Auth.silentAuth(savedName);
         if (user) {
             currentUser = user;
@@ -108,11 +107,10 @@ window.handleAuth = async () => {
     const errorMsg = document.getElementById('auth-error');
 
     if (!usernameInput) return;
-
     const username = usernameInput.value.trim();
     
     if (!username) {
-        errorMsg.innerText = "Introduce un nombre de usuario";
+        errorMsg.innerText = "Introduce un nombre";
         errorMsg.classList.remove('hidden');
         return;
     }
@@ -152,12 +150,10 @@ window.startGame = () => {
     player.direction = 1;
     player.trail = [];
     hud.innerText = score;
-    lastTime = performance.now(); // Reset time on start
+    lastTime = performance.now();
     
     if (!isMuted) {
-        bgMusic.play().catch(() => {
-            console.log("Audio playback waiting for interaction");
-        });
+        bgMusic.play().catch(() => {});
     }
 };
 
@@ -224,19 +220,16 @@ function spawnObstacle() {
     let oy = CY + Math.sin(spawnAngle) * startDist;
     let targetAngle = Math.atan2(CY - oy, CX - ox);
     
-    // Level adjustments
     let speedMult = currentLevel >= 2 ? 1.5 : 1;
     let speedBase = (2.5 + Math.random() * 1.5 + Math.min(score * 0.05, 3)) * speedMult;
     
     let type = 'normal';
     let color = '#ff0055';
     
-    // Random Shield Spawn (Low probability)
     if (Math.random() < 0.05) {
         type = 'shield';
         color = '#ffff00';
     } else if (currentLevel >= 3 && Math.random() < 0.2) {
-        // Level 3 mechanic: Blue asteroids
         type = 'ghost';
         color = '#00f0ff';
     }
@@ -255,7 +248,6 @@ function spawnObstacle() {
 function update(dt) {
     if (screenShake > 0) screenShake--;
 
-    // Particles use dt for fade
     for (let i = particles.length - 1; i >= 0; i--) {
         let p = particles[i];
         p.x += p.vx * dt;
@@ -266,7 +258,6 @@ function update(dt) {
 
     if (gameState !== 'PLAYING') return;
 
-    // Level progression logic
     if (score >= 20 && currentLevel === 1) {
         currentLevel = 2;
         screenShake = 15;
@@ -275,11 +266,10 @@ function update(dt) {
         screenShake = 15;
     } else if (score >= 100 && currentLevel === 3) {
         currentLevel = 4;
-        player.speed = player.baseSpeed * 1.6; // 60% speed boost
+        player.speed = player.baseSpeed * 1.6;
         screenShake = 20;
     }
 
-    // Movement synchronized with dt
     player.angle += player.speed * player.direction * dt;
     player.x = CX + Math.cos(player.angle) * ORBIT_RADIUS;
     player.y = CY + Math.sin(player.angle) * ORBIT_RADIUS;
@@ -290,15 +280,12 @@ function update(dt) {
     spawnTimer += dt;
     if (spawnTimer >= spawnRate) {
         spawnTimer = 0;
-        
-        // Spawn multiple if level 2+
         let count = (currentLevel >= 2 && Math.random() < 0.3) ? 2 : 1;
         for (let i = 0; i < count; i++) {
             spawnObstacle();
         }
-
         if (spawnRate > 28 && score > 0 && score % 3 === 0) {
-            spawnRate -= 0.5; // Adjusted decrement for dt
+            spawnRate -= 0.5;
         }
     }
 
@@ -328,11 +315,8 @@ function update(dt) {
         }
 
         let distToCenter = Math.hypot(CX - obs.x, CY - obs.y);
-        
         if (obs.type === 'ghost') {
-            if (distToCenter > 500) {
-                obstacles.splice(i, 1);
-            }
+            if (distToCenter > 500) obstacles.splice(i, 1);
         } else {
             if (distToCenter < PLANET_RADIUS + 4) {
                 if (obs.type !== 'shield') {
@@ -348,38 +332,31 @@ function update(dt) {
 
 function draw() {
     ctx.save();
-    
     if (screenShake > 0) {
         let dx = (Math.random() - 0.5) * screenShake * 0.6;
         let dy = (Math.random() - 0.5) * screenShake * 0.6;
         ctx.translate(dx, dy);
     }
-
     ctx.fillStyle = 'rgba(8, 8, 16, 0.3)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Level indicator
     if (gameState === 'PLAYING') {
         ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
         ctx.font = 'bold 20px Arial';
         ctx.textAlign = 'right';
         ctx.fillText(`LVL ${currentLevel}`, canvas.width - 20, 40);
-        
-        // Shield indicator
         if (hasShield) {
             ctx.fillStyle = '#ffff00';
             ctx.fillText('🛡️ ESCUDO', canvas.width - 20, 70);
         }
     }
 
-    // Orbit guide
     ctx.beginPath();
     ctx.arc(CX, CY, ORBIT_RADIUS, 0, Math.PI * 2);
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Planet
     ctx.shadowBlur = 15;
     ctx.shadowColor = '#00f0ff';
     ctx.beginPath();
@@ -387,7 +364,6 @@ function draw() {
     ctx.fillStyle = '#00f0ff';
     ctx.fill();
 
-    // Obstacles
     obstacles.forEach(obs => {
         ctx.shadowBlur = obs.type === 'shield' ? 20 : 15;
         ctx.shadowColor = obs.color;
@@ -405,7 +381,6 @@ function draw() {
         ctx.fill();
     });
 
-    // Trail
     ctx.shadowBlur = 0;
     player.trail.forEach((pos, idx) => {
         let alpha = (idx / player.trail.length) * 0.4;
@@ -416,7 +391,6 @@ function draw() {
         ctx.fill();
     });
 
-    // Player
     if (gameState === 'PLAYING') {
         ctx.shadowBlur = 15;
         ctx.shadowColor = hasShield ? '#ffff00' : '#00ff66';
@@ -424,7 +398,6 @@ function draw() {
         ctx.beginPath();
         ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
         ctx.fill();
-        
         if (hasShield) {
             ctx.beginPath();
             ctx.arc(player.x, player.y, player.radius + 4, 0, Math.PI * 2);
@@ -434,7 +407,6 @@ function draw() {
         }
     }
 
-    // Particles
     ctx.shadowBlur = 5;
     particles.forEach(p => {
         ctx.shadowColor = p.color;
@@ -445,19 +417,14 @@ function draw() {
         ctx.fill();
         ctx.globalAlpha = 1.0;
     });
-
     ctx.restore();
 }
 
 function gameLoop(now) {
-    // Delta time calculation
     if (!lastTime) lastTime = now;
     const deltaTime = (now - lastTime) / (1000 / TARGET_FPS);
     lastTime = now;
-
-    // Use dt only if it's reasonable (ignore spikes or first frame)
     const dt = isNaN(deltaTime) ? 1 : Math.min(deltaTime, 2);
-
     update(dt);
     draw();
     requestAnimationFrame(gameLoop);
