@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EsquivaCo - Neon Orbit Arcade</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+    <div id="game-container">
+        <div id="hud" class="hidden">0</div>
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="ui-screen">
+            <h1>EsquivaCo</h1>
+            <p class="subtitle">NEON ORBIT ARCADE</p>
+            <div class="controls-info">
+                <p>Toca para cambiar de dirección</p>
+            </div>
+            <button class="btn" onclick="startGame()">Jugar</button>
+            <button class="btn btn-secondary" onclick="showLeaderboard()">Récords</button>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="gameover-screen" class="ui-screen hidden">
+            <h1 style="color: var(--neon-pink); text-shadow: 0 0 20px rgba(255, 0, 85, 0.5);">¡GAME OVER!</h1>
+            <div class="stats-container">
+                <div class="stat-row">
+                    <span class="stat-label">PUNTOS</span>
+                    <span id="final-score" class="stat-value">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">RÉCORD</span>
+                    <span id="high-score" class="stat-value">0</span>
+                </div>
+            </div>
+            <button class="btn" onclick="restartGame()">Reintentar</button>
+            <button class="btn btn-secondary" onclick="showMenu()">Menú Principal</button>
+        </div>
+
+        <!-- Leaderboard Screen -->
+        <div id="leaderboard-screen" class="ui-screen hidden">
+            <h1>Top Récords</h1>
+            <div id="leaderboard-list-container"></div>
+            <button class="btn btn-secondary" onclick="showMenu()">Volver</button>
+        </div>
+
+        <button id="audio-control">🔊</button>
+        <audio id="bg-music" loop src="assets/hardgaming.mp3"></audio>
+
+        <canvas id="gameCanvas" width="600" height="600"></canvas>
+    </div>
+
+    <script type="module" src="js/game.js"></script>
+</body>
+</html>

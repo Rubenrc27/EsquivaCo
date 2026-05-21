@@ -1,0 +1,208 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+:root {
+    --bg-color: #05050a;
+    --container-bg: #0a0a14;
+    --canvas-bg: #080810;
+    --neon-cyan: #00f0ff;
+    --neon-green: #00ff66;
+    --neon-pink: #ff0055;
+    --text-muted: #8a8ab0;
+}
+
+body {
+    background-color: var(--bg-color);
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+}
+
+#game-container {
+    position: relative;
+    width: 95vw;
+    max-width: 600px;
+    aspect-ratio: 1 / 1;
+    background: var(--container-bg);
+    box-shadow: 0 0 50px rgba(0, 240, 255, 0.1);
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: var(--canvas-bg);
+}
+
+.ui-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background: rgba(8, 8, 16, 0.9);
+    z-index: 10;
+    transition: opacity 0.3s ease;
+}
+
+h1 {
+    font-size: 3.5rem;
+    color: var(--neon-cyan);
+    text-transform: uppercase;
+    letter-spacing: 6px;
+    margin-bottom: 5px;
+    text-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+}
+
+.subtitle {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 40px;
+    letter-spacing: 2px;
+}
+
+.btn {
+    background: transparent;
+    color: var(--neon-green);
+    border: 2px solid var(--neon-green);
+    padding: 15px 40px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-radius: 50px;
+    cursor: pointer;
+    letter-spacing: 3px;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 0 15px rgba(0, 255, 102, 0.2);
+    margin: 10px;
+}
+
+.btn:hover {
+    background: var(--neon-green);
+    color: var(--bg-color);
+    box-shadow: 0 0 30px rgba(0, 255, 102, 0.5);
+    transform: scale(1.05);
+}
+
+.btn-secondary {
+    color: var(--neon-cyan);
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+}
+
+.btn-secondary:hover {
+    background: var(--neon-cyan);
+    box-shadow: 0 0 30px rgba(0, 240, 255, 0.5);
+}
+
+#hud {
+    position: absolute;
+    top: 30px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    color: #ffffff;
+    font-size: 3rem;
+    font-weight: 900;
+    font-family: 'Courier New', Courier, monospace;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+    pointer-events: none;
+    z-index: 5;
+    opacity: 0.8;
+}
+
+.stats-container {
+    margin: 25px 0;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 15px;
+    min-width: 250px;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+.stat-label {
+    color: var(--text-muted);
+}
+
+.stat-value {
+    color: #fff;
+    font-weight: bold;
+}
+
+#high-score {
+    color: #ffff00;
+}
+
+/* Leaderboard Modal */
+#leaderboard-screen {
+    padding: 40px 20px;
+}
+
+.leaderboard-list {
+    width: 100%;
+    max-width: 300px;
+    margin: 20px 0;
+    list-style: none;
+}
+
+.leaderboard-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.leaderboard-item:nth-child(1) { color: #ffd700; font-weight: bold; }
+.leaderboard-item:nth-child(2) { color: #c0c0c0; }
+.leaderboard-item:nth-child(3) { color: #cd7f32; }
+
+/* Audio Control */
+#audio-control {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    color: #fff;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 20;
+    transition: background 0.3s;
+}
+
+#audio-control:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.hidden {
+    display: none !important;
+}
