@@ -382,4 +382,67 @@ function gameLoop() {
 }
 
 setupAudio();
+initSession();
+gameLoop();
+obs.x, obs.y + obs.radius);
+            ctx.lineTo(obs.x - obs.radius, obs.y);
+            ctx.closePath();
+        } else {
+            ctx.arc(obs.x, obs.y, obs.radius, 0, Math.PI * 2);
+        }
+        ctx.fill();
+    });
+
+    // Trail
+    ctx.shadowBlur = 0;
+    player.trail.forEach((pos, idx) => {
+        let alpha = (idx / player.trail.length) * 0.4;
+        let rad = player.radius * (idx / player.trail.length);
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, rad, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(0, 255, 102, ${alpha})`;
+        ctx.fill();
+    });
+
+    // Player
+    if (gameState === 'PLAYING') {
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = hasShield ? '#ffff00' : '#00ff66';
+        ctx.fillStyle = hasShield ? '#ffff00' : '#00ff66';
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Extra glow if shield active
+        if (hasShield) {
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.radius + 4, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(255, 255, 0, 0.5)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+    }
+
+    // Particles
+    ctx.shadowBlur = 5;
+    particles.forEach(p => {
+        ctx.shadowColor = p.color;
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.alpha;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+    });
+
+    ctx.restore();
+}
+
+function gameLoop() {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+setupAudio();
 gameLoop();

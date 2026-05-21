@@ -206,3 +206,63 @@ h1 {
 .hidden {
     display: none !important;
 }
+
+/* Auth Styles */
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+    max-width: 300px;
+    gap: 15px;
+}
+
+.auth-form input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 12px 20px;
+    border-radius: 10px;
+    color: white;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.auth-form input:focus {
+    border-color: var(--neon-cyan);
+}
+
+.error-msg {
+    color: var(--neon-pink);
+    font-size: 0.8rem;
+    margin-top: -5px;
+}
+
+.user-badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: var(--neon-cyan);
+}
+
+.btn-small {
+    background: transparent;
+    border: 1px solid var(--neon-pink);
+    color: var(--neon-pink);
+    padding: 2px 8px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+}
+
+.btn-small:hover {
+    background: var(--neon-pink);
+    color: white;
+}

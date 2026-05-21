@@ -11,8 +11,24 @@
     <div id="game-container">
         <div id="hud" class="hidden">0</div>
 
+        <!-- Login Screen -->
+        <div id="login-screen" class="ui-screen">
+            <h1>EsquivaCo</h1>
+            <p class="subtitle">INICIA SESIÓN PARA COMPETIR</p>
+            <div class="auth-form">
+                <input type="text" id="auth-username" placeholder="Usuario" autocomplete="off">
+                <input type="password" id="auth-password" placeholder="Contraseña">
+                <p id="auth-error" class="error-msg hidden"></p>
+                <button class="btn" onclick="handleAuth()">Entrar / Registrarse</button>
+            </div>
+        </div>
+
         <!-- Start Screen -->
-        <div id="start-screen" class="ui-screen">
+        <div id="start-screen" class="ui-screen hidden">
+            <div id="user-badge" class="user-badge">
+                <span id="display-username"></span>
+                <button onclick="logout()" class="btn-small">Salir</button>
+            </div>
             <h1>EsquivaCo</h1>
             <p class="subtitle">NEON ORBIT ARCADE</p>
             <div class="controls-info">

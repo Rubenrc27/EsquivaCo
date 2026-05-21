@@ -1,29 +1,71 @@
-const LEADERBOARD_KEY = 'esquivaco_leaderboard';
+import { supabase } from './supabase-client.js';
+
 const MAX_ENTRIES = 10;
 
 export const Leaderboard = {
-    getEntries() {
-        const stored = localStorage.getItem(LEADERBOARD_KEY);
-        return stored ? JSON.parse(stored) : [];
+    async getEntries() {
+        const { data, error } = await supabase
+            .from('leaderboard')
+            .select(`
+                score,
+                created_at,
+                profiles (
+                    username
+                )
+            `)
+            .order('score', { ascending: false })
+            .limit(MAX_ENTRIES);
+
+        if (error) {
+            console.error('Error fetching leaderboard:', error);
+            return [];
+        }
+
+        return data.map(entry => ({
+            score: entry.score,
+            username: entry.profiles.username,
+            date: new Date(entry.created_at).toLocaleDateString()
+        }));
     },
 
-    saveEntry(score) {
-        let entries = this.getEntries();
-        const date = new Date().toLocaleDateString();
-        
-        entries.push({ score, date });
-        entries.sort((a, b) => b.score - a.score);
-        entries = entries.slice(0, MAX_ENTRIES);
-        
-        localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(entries));
-        return entries;
+    async getUserBest(userId) {
+        const { data, error } = await supabase
+            .from('leaderboard')
+            .select('score')
+            .eq('user_id', userId)
+            .order('score', { ascending: false })
+            .limit(1)
+            .single();
+
+        if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+            console.error('Error fetching user best:', error);
+        }
+
+        return data ? data.score : 0;
     },
 
-    render(containerId) {
+    async saveEntry(userId, score) {
+        // Only save if it's a new record or if you want to keep all attempts.
+        // For a simple leaderboard, we can just insert all and the query takes the max.
+        const { error } = await supabase
+            .from('leaderboard')
+            .insert([
+                { user_id: userId, score: score }
+            ]);
+
+        if (error) {
+            console.error('Error saving entry:', error);
+        }
+    },
+
+    async render(containerId) {
         const container = document.getElementById(containerId);
         if (!container) return;
 
-        const entries = this.getEntries();
+        container.innerHTML = '<p class="subtitle">Cargando récords...</p>';
+
+        const entries = await this.getEntries();
+        
         if (entries.length === 0) {
             container.innerHTML = '<p class="subtitle">No hay récords aún. ¡Sé el primero!</p>';
             return;
@@ -33,9 +75,8 @@ export const Leaderboard = {
         entries.forEach((entry, index) => {
             html += `
                 <li class="leaderboard-item">
-                    <span>#${index + 1}</span>
+                    <span>#${index + 1} ${entry.username.toUpperCase()}</span>
                     <span>${entry.score} pts</span>
-                    <span style="font-size: 0.8rem; opacity: 0.5;">${entry.date}</span>
                 </li>
             `;
         });
