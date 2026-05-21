@@ -63,8 +63,8 @@ export const Leaderboard = {
         entries.forEach((entry, index) => {
             html += `
                 <li class="leaderboard-item">
-                    <span>#${index + 1} ${entry.username.toUpperCase()}</span>
-                    <span>${entry.score} pts</span>
+                    <span class="leaderboard-name">#${index + 1} ${entry.username.toUpperCase()}</span>
+                    <span class="leaderboard-score">${entry.score} PTS</span>
                 </li>
             `;
         });
