@@ -1,28 +1,12 @@
 import { supabase } from './supabase-client.js';
 
 export const Auth = {
-    // Autenticación Silenciosa: Usa un password interno para que el usuario no tenga que ponerlo
+    // Autenticación Anónima: Permite jugar sin crear cuenta manual
     async silentAuth(username) {
-        console.log("Intentando SilentAuth para:", username);
-        const virtualEmail = `${username.toLowerCase()}@esquivaco.local`;
-        const internalPass = "EsquivaCo_Internal_2026!"; 
-
-        // 1. Intentar Login
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-            email: virtualEmail,
-            password: internalPass,
-        });
-
-        if (!signInError) {
-            console.log("Login exitoso");
-            return { user: signInData.user, error: null };
-        }
-
-        // 2. Si el login falla, intentamos registrar
-        console.log("Usuario no existe o error, intentando registro...");
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-            email: virtualEmail,
-            password: internalPass,
+        console.log("Intentando Login Anónimo para:", username);
+        
+        // 1. Iniciar sesión de forma anónima
+        const { data, error } = await supabase.auth.signInAnonymously({
             options: {
                 data: {
                     username: username
@@ -30,12 +14,28 @@ export const Auth = {
             }
         });
 
-        if (signUpError) {
-            console.error("Error final en Auth:", signUpError.message);
-            return { user: null, error: signUpError.message };
+        if (error) {
+            console.error("Error en Auth Anónimo:", error.message);
+            return { user: null, error: error.message };
         }
 
-        return { user: signUpData.user, error: null };
+        // 2. Actualizar el perfil con el nombre de usuario
+        // Esto es necesario para que el leaderboard pueda mostrar el nombre
+        const { error: profileError } = await supabase
+            .from('profiles')
+            .upsert({ 
+                id: data.user.id, 
+                username: username,
+                updated_at: new Date()
+            });
+
+        if (profileError) {
+            console.warn("No se pudo actualizar el perfil:", profileError.message);
+            // No bloqueamos el login si falla el perfil, pero avisamos
+        }
+
+        console.log("Login anónimo exitoso");
+        return { user: data.user, error: null };
     },
 
     async getCurrentUser() {
