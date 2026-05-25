@@ -332,35 +332,57 @@ h1 {
     }
 
     #game-container {
-        width: 100vw;
-        height: 100vh;
-        max-width: none;
-        border-radius: 0;
-        border: none;
+        width: 95vw;
+        height: 95vw; /* Mantiene el cuadrado */
+        max-width: 500px;
+        max-height: 500px;
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 0 30px rgba(0, 240, 255, 0.15);
+    }
+
+    .ui-screen {
+        padding: 15px;
     }
 
     .leaderboard-list {
-        max-width: 90%;
+        max-width: 100%;
+        margin: 5px 0;
     }
 
     .leaderboard-item {
-        padding: 8px 10px;
-        font-size: 0.85rem;
+        padding: 6px 8px;
+        font-size: 0.8rem;
     }
 
     #leaderboard-list-container {
-        max-height: 50vh;
+        max-height: 40vw; /* Ajustado al contenedor cuadrado */
+    }
+
+    .stats-container {
+        margin: 10px 0;
+        padding: 10px;
+        min-width: 200px;
+    }
+
+    .stat-row {
+        font-size: 0.9rem;
     }
 }
 
 @media (max-height: 600px) {
+    #game-container {
+        width: 80vh;
+        height: 80vh;
+    }
+    
     h1 {
-        font-size: 2rem;
-        margin-bottom: 2px;
+        font-size: 1.8rem;
     }
 
     .subtitle {
-        margin-bottom: 20px;
+        margin-bottom: 15px;
+        font-size: 0.7rem;
     }
 
     .btn {
