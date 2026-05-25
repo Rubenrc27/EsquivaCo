@@ -159,32 +159,38 @@ h1 {
 
 /* Leaderboard Modal */
 #leaderboard-screen {
-    padding: 40px 20px;
+    padding: 20px;
+    justify-content: flex-start; /* Start from top on mobile */
+    padding-top: 40px;
 }
 
 #leaderboard-list-container {
     width: 100%;
     display: flex;
     justify-content: center;
+    overflow-y: auto; /* Allow scrolling if list is long */
+    max-height: 60vh;
+    margin-bottom: 20px;
 }
 
 .leaderboard-list {
     width: 100%;
-    max-width: 400px; /* Slightly wider */
-    margin: 20px 0;
+    max-width: 450px;
+    margin: 10px 0;
     list-style: none;
     background: rgba(255, 255, 255, 0.02);
     border-radius: 15px;
-    padding: 10px;
+    padding: 5px;
 }
 
 .leaderboard-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 15px;
+    padding: 10px 12px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9rem;
 }
 
 .leaderboard-item:last-child {
@@ -197,7 +203,7 @@ h1 {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-right: 20px;
+    margin-right: 10px;
     font-weight: bold;
     letter-spacing: 1px;
 }
@@ -205,7 +211,7 @@ h1 {
 .leaderboard-score {
     color: var(--neon-cyan);
     font-weight: 900;
-    min-width: 80px;
+    min-width: 70px;
     text-align: right;
 }
 
@@ -298,4 +304,71 @@ h1 {
 .btn-small:hover {
     background: var(--neon-pink);
     color: white;
+}
+
+/* Responsiveness */
+@media (max-width: 600px) {
+    h1 {
+        font-size: 2.5rem;
+        letter-spacing: 4px;
+    }
+
+    .btn {
+        padding: 12px 30px;
+        font-size: 1rem;
+        letter-spacing: 2px;
+    }
+
+    #hud {
+        font-size: 2.5rem;
+        top: 20px;
+    }
+
+    .user-badge {
+        top: 10px;
+        right: 10px;
+        font-size: 0.7rem;
+        padding: 4px 10px;
+    }
+
+    #game-container {
+        width: 100vw;
+        height: 100vh;
+        max-width: none;
+        border-radius: 0;
+        border: none;
+    }
+
+    .leaderboard-list {
+        max-width: 90%;
+    }
+
+    .leaderboard-item {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+    }
+
+    #leaderboard-list-container {
+        max-height: 50vh;
+    }
+}
+
+@media (max-height: 600px) {
+    h1 {
+        font-size: 2rem;
+        margin-bottom: 2px;
+    }
+
+    .subtitle {
+        margin-bottom: 20px;
+    }
+
+    .btn {
+        padding: 10px 25px;
+        margin: 5px;
+    }
+
+    #leaderboard-list-container {
+        max-height: 40vh;
+    }
 }
