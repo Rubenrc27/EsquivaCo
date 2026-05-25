@@ -55,6 +55,24 @@ export const Leaderboard = {
         }
     },
 
+    // Guardar puntuación usando el ID del usuario
+    async saveEntry(userId, score) {
+        console.log("Guardando récord para el ID:", userId, "Puntos:", score);
+        
+        const { error } = await supabase
+            .from('leaderboard')
+            .insert([
+                { 
+                    user_id: userId,
+                    score: score
+                }
+            ]);
+
+        if (error) {
+            console.error('Error al guardar puntuación:', error.message);
+        }
+    },
+
     async render(containerId) {
         const container = document.getElementById(containerId);
         if (!container) return;

@@ -192,7 +192,11 @@ function triggerGameOver() {
     highScoreTxt.innerText = highScore;
     
     if (currentUser) {
-        Leaderboard.saveEntry(currentUser.id, score);
+        try {
+            Leaderboard.saveEntry(currentUser.id, score);
+        } catch (e) {
+            console.error("Error al guardar en el leaderboard:", e);
+        }
     }
     
     createExplosion(player.x, player.y, '#00ff66', 30);
@@ -421,12 +425,16 @@ function draw() {
 }
 
 function gameLoop(now) {
-    if (!lastTime) lastTime = now;
-    const deltaTime = (now - lastTime) / (1000 / TARGET_FPS);
-    lastTime = now;
-    const dt = isNaN(deltaTime) ? 1 : Math.min(deltaTime, 2);
-    update(dt);
-    draw();
+    try {
+        if (!lastTime) lastTime = now;
+        const deltaTime = (now - lastTime) / (1000 / TARGET_FPS);
+        lastTime = now;
+        const dt = isNaN(deltaTime) ? 1 : Math.min(deltaTime, 2);
+        update(dt);
+        draw();
+    } catch (error) {
+        console.error("Error in game loop:", error);
+    }
     requestAnimationFrame(gameLoop);
 }
 
