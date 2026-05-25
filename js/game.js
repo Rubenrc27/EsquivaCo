@@ -179,7 +179,7 @@ function hideAllScreens() {
     hud.classList.add('hidden');
 }
 
-function triggerGameOver() {
+async function triggerGameOver() {
     gameState = 'GAMEOVER';
     hud.classList.add('hidden');
     gameoverScreen.classList.remove('hidden');
@@ -192,11 +192,7 @@ function triggerGameOver() {
     highScoreTxt.innerText = highScore;
     
     if (currentUser) {
-        try {
-            Leaderboard.saveEntry(currentUser.id, score);
-        } catch (e) {
-            console.error("Error al guardar en el leaderboard:", e);
-        }
+        await Leaderboard.saveEntry(currentUser.id, score);
     }
     
     createExplosion(player.x, player.y, '#00ff66', 30);
