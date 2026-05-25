@@ -30,9 +30,10 @@ body {
 
 #game-container {
     position: relative;
-    width: 95vw;
+    width: 90vmin;
+    height: 90vmin;
     max-width: 600px;
-    aspect-ratio: 1 / 1;
+    max-height: 600px;
     background: var(--container-bg);
     box-shadow: 0 0 50px rgba(0, 240, 255, 0.1);
     border-radius: 20px;
@@ -332,10 +333,8 @@ h1 {
     }
 
     #game-container {
-        width: 95vw;
-        height: 95vw; /* Mantiene el cuadrado */
-        max-width: 500px;
-        max-height: 500px;
+        width: 90vmin;
+        height: 90vmin;
         border-radius: 15px;
         border: 1px solid rgba(255, 255, 255, 0.1);
         box-shadow: 0 0 30px rgba(0, 240, 255, 0.15);
@@ -356,7 +355,7 @@ h1 {
     }
 
     #leaderboard-list-container {
-        max-height: 40vw; /* Ajustado al contenedor cuadrado */
+        max-height: 45vmin; /* Proporcional al contenedor vmin */
     }
 
     .stats-container {
